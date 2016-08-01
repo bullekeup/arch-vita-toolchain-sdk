@@ -1,0 +1,45 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=libzip-vita-host
+_pkgname=libzip
+pkgver=1.1.2
+pkgrel=1
+pkgdesc="A C library for reading, creating, and modifying zip archives - PSVita toolchain build"
+url="http://www.nih.at/libzip/index.html"
+license=('BSD')
+arch=('i686' 'x86_64')
+depends=('zlib-vita-host')
+source=("http://www.nih.at/${_pkgname}/${_pkgname}-${pkgver}.tar.xz")
+md5sums=('d79c12d2405366cd954dd8e2144efbf7')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+# -fPIC needed ?
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
+
+build() {
+  cd ${_pkgname}-${pkgver}
+
+  ./configure --prefix=${DIR_NATIVE}/usr \
+    --with-zlib=${DIR_NATIVE}/usr/lib \
+    --disable-nls \
+    --disable-shared
+  make
+}
+
+package() {
+  cd ${_pkgname}-${pkgver}
+  make DESTDIR="${pkgdir}" install
+
+  # preserve old header path for compatibility
+  ln -s ${DIR_NATIVE}/usr/lib/libzip/include/zipconf.h "${pkgdir}/${DIR_NATIVE}/usr/include/zipconf.h"
+  install -Dm644 LICENSE "${pkgdir}/${DIR_NATIVE}/usr/share/licenses/${_pkgname}/LICENSE"
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

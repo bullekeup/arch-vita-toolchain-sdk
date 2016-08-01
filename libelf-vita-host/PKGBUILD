@@ -1,0 +1,53 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+_pkgbase=libelf
+pkgname=libelf-vita-host
+pkgver=0.8.13
+pkgrel=1
+pkgdesc="Library to handle ELF object files - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://www.mr511.de/software/"
+license=('LGPL')
+depends=('gcc-libs' 'zlib' 'bzip2' 'xz')
+options=('staticlibs')
+source=(http://www.mr511.de/software/${_pkgbase}-${pkgver}.tar.gz
+        vita.${_pkgbase}-${pkgver}.patch)
+sha1sums=('c1d6ac5f182d19dd685c4dfd74eedbfe3992425d'
+          '7863830e83a980c08b09f02faa92652b8e7b6a0a')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+# -fPIC needed ?
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
+
+build() {
+
+  cd ${_pkgbase}-${pkgver}
+
+  patch -p1 < ${srcdir}/vita.${_pkgbase}-${pkgver}.patch
+
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix="${pkgdir}/${DIR_NATIVE}/usr" \
+    --disable-shared \
+    --enable-static \
+    --disable-nls
+
+  make
+}
+
+package() {
+
+  cd ${_pkgbase}-${pkgver}
+  make install
+  sed -i -e "s:${pkgdir}/::g" "${pkgdir}/${DIR_NATIVE}/usr/lib/pkgconfig/libelf.pc"
+
+}
+

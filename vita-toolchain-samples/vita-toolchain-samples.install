@@ -1,0 +1,37 @@
+
+post_install() {
+
+cat <<EOF
+
+  ######## Vita toolchain sample ########
+
+  This package provides a reference vpk and
+  source code from xerpi's vitahelloworld sample,
+  see here: https://github.com/xerpi/vitahelloworld
+
+  The vpk is located at 
+  /opt/vita-toolchain/arm-vita-eabi/usr/share/samples/vpk/vitahelloworld.vpk
+
+  Source code as it was at compile time is 
+  available here: 
+  /opt/vita-toolchain/arm-vita-eabi/usr/share/samples/src/vitahelloworld
+
+  ######### Vita toolchain repo ##########
+
+  An arch repo containing toolchain packages can be found
+  at https://repo.bullekeup.net/$arch, add it to your pacman.conf
+  for easy updates.
+
+  Vita-specific packages (like arm-vita-eabi-libs and arm-vita-eabi-tools)
+  will be updated regularly (once a week or every two weeks)
+  and if needed you can rebuild them manually.
+
+  PKGBUILDs are available at
+  https://github.com/bullekeup/arch-vita-toolchain-sdk
+  
+  Thanks to the Molecule team for the hack :)
+  Enjoy programming on the vita !
+
+EOF
+
+}

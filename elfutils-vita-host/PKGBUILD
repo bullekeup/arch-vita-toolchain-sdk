@@ -1,0 +1,62 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgbase=elfutils-vita-host
+_pkgbase=elfutils
+pkgname=(elfutils-vita-host libelf-vita-host)
+pkgver=0.166
+pkgrel=1
+pkgdesc="Utilities to handle ELF object files and DWARF debugging information - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="https://fedorahosted.org/elfutils/"
+license=('LGPL3' 'GPL' 'GPL3')
+depends=('gcc-libs' 'zlib' 'bzip2' 'xz')
+options=('staticlibs')
+source=(https://fedorahosted.org/releases/e/l/elfutils/${pkgver}/elfutils-${pkgver}.tar.bz2{,.sig})
+sha1sums=('00b678e1182c331ea75af982d666bbc38ef8b055'
+          'SKIP')
+validpgpkeys=('47CC0331081B8BC6D0FD4DA08370665B57816A6A')  # Mark J. Wielaard <mark@klomp.org>
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib -fPIC "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib  -fPIC "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib "
+
+build() {
+  cd ${_pkgbase}-${pkgver}
+
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_NATIVE}/usr \
+    --disable-shared \
+    --disable-nls \
+    --with-zlib=${DIR_NATIVE}/usr/lib \
+    --enable-static
+
+  make
+}
+
+package_elfutils-vita-host() {
+  depends=("libelf-vita-host=$pkgver-$pkgrel")
+
+  cd ${_pkgbase}-${pkgver}
+
+  make DESTDIR="${pkgdir}" install
+
+  [ -e "${srcdir}"/libelf ] || mkdir -p "${srcdir}"/libelf
+  mv "${pkgdir}/${DIR_NATIVE}"/usr/{lib,include} "${srcdir}/libelf"
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+
+package_libelf-vita-host() {
+  pkgdesc="Libraries to handle ELF object files and DWARF debugging information - PSVita toolchain build"
+  [ -e "${pkgdir}/${DIR_NATIVE}/usr" ] || mkdir -p "${pkgdir}/${DIR_NATIVE}/usr"
+  mv libelf/{lib,include} "${pkgdir}/${DIR_NATIVE}/usr"
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

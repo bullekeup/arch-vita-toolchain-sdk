@@ -1,0 +1,41 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=jansson-vita-host
+_pkgname=jansson
+pkgver=2.7
+pkgrel=1
+pkgdesc='C library for encoding, decoding and manipulating JSON data - PSVita toolchain build'
+arch=('i686' 'x86_64')
+url='http://www.digip.org/jansson/'
+depends=('glibc')
+license=('MIT')
+options=('staticlibs')
+source=("http://www.digip.org/${_pkgname}/releases/${_pkgname}-${pkgver}.tar.bz2")
+md5sums=('ffac352f9c5f80a6ae8145d451af2c0e')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+# -fPIC needed ?
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
+
+build() {
+  cd "$srcdir/${_pkgname}-${pkgver}"
+  ./configure --disable-shared \
+    --enable-static \
+    --prefix=${DIR_NATIVE}/usr
+  make
+}
+
+package() {
+  cd "$srcdir/${_pkgname}-${pkgver}"
+  make DESTDIR="$pkgdir" install
+  install -Dm644 LICENSE "$pkgdir/${DIR_NATIVE}/usr/share/licenses/${_pkgname}/LICENSE"
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

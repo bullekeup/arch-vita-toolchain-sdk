@@ -1,0 +1,46 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=libmpc-vita-host
+_pkgname=libmpc
+pkgver=1.0.3
+pkgrel=1
+pkgdesc="Library for the arithmetic of complex numbers with arbitrarily high precision - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://www.multiprecision.org/"
+license=('LGPL')
+makedepends=('mpfr-vita-host' 'gmp-vita-host')
+source=(http://www.multiprecision.org/mpc/download/mpc-${pkgver/_/-}.tar.gz{,.sig})
+md5sums=('d6a1d5f8ddea3abd2cc3e98f58352d26'
+         'SKIP')
+validpgpkeys=('AD17A21EF8AED8F1CC02DBD9F7D5C9BF765C61E3')  # Andreas Enge
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+build() {
+  cd "${srcdir}/mpc-${pkgver}"
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_NATIVE}/usr \
+    --disable-shared \
+    --disable-nls \
+    --with-gmp=${DIR_NATIVE}/usr \
+    --with-mpfr=${DIR_NATIVE}/usr
+  make
+}
+
+check() {
+  cd "${srcdir}/mpc-${pkgver}"
+  make check
+}
+
+package() {
+  cd "${srcdir}/mpc-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  mv ${pkgdir}/${DIR_NATIVE}/usr/share/info/{mpc,libmpc}.info
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}

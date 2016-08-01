@@ -1,0 +1,27 @@
+diff -ru a/gcc/config/arm/arm-c.c b/gcc/config/arm/arm-c.c
+index 4fbdfc5..b915864 100644
+--- a/gcc/config/arm/arm-c.c
++++ b/gcc/config/arm/arm-c.c
+@@ -71,6 +71,7 @@ arm_cpu_builtins (struct cpp_reader* pfile)
+ 
+   def_or_undef_macro (pfile, "__ARM_FEATURE_QRDMX", TARGET_NEON_RDMA);
+ 
++  builtin_define ("__vita__");
+   if (TARGET_CRC32)
+     builtin_define ("__ARM_FEATURE_CRC32");
+
+diff --git a/gcc/gcc.c b/gcc/gcc.c
+index 4836442..442e082 100644
+--- a/gcc/gcc.c
++++ b/gcc/gcc.c
+@@ -658,8 +658,9 @@ proper position among the other output files.  */
+ #endif
+ 
+ /* config.h can define LIB_SPEC to override the default libraries.  */
++#undef LIB_SPEC
+ #ifndef LIB_SPEC
+-#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}}"
++#define LIB_SPEC "%{!shared:%{g*:-lg} %{!p:%{!pg:-lc}}%{p:-lc_p}%{pg:-lc_p}} -lSceRtc_stub -lSceKernel_stub"
+ #endif
+ 
+ /* When using -fsplit-stack we need to wrap pthread_create, in order

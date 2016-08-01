@@ -1,0 +1,51 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=arm-vita-eabi-tools
+_pkgname=vita-toolchain
+_commit=f8fbf1425c0358130674ff1a23618de89e74d5b1
+pkgver=git
+pkgrel=1
+pkgdesc='PSVita toolchain tools'
+arch=('i686' 'x86_64')
+url='https://github.com/vitasdk/vita-toolchain'
+license=('custom')
+makedepends=('git' 'cmake' 'extra-cmake-modules' 'libelf-vita-host' 'zlib-vita-host' 'libzip-vita-host' 'jansson-vita-host')
+source=("${pkgname}::git+http://github.com/vitasdk/vita-toolchain#commit=${_commit}"
+        "https://github.com/vitasdk/vita-headers/raw/master/db.json")
+md5sums=('SKIP'
+         '9376968494fd0fbc0d9e4fecf57d6612')
+groups=('vita-toolchain')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+# -fPIC needed ?
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
+
+build() {
+  cd "$srcdir/${pkgname}"
+  cmake \
+	-DJansson_INCLUDE_DIR=${DIR_NATIVE}/usr/include/ \
+	-DJansson_LIBRARY=${DIR_NATIVE}/usr/lib/libjansson.a \
+	-Dlibelf_INCLUDE_DIR=${DIR_NATIVE}/usr/include/libelf \
+	-Dlibelf_LIBRARY=${DIR_NATIVE}/usr/lib/libelf.a \
+    -Dzlib_INCLUDE_DIR=${DIR_NATIVE}/usr/include/ \
+    -Dzlib_LIBRARY=${DIR_NATIVE}/usr/lib/libz.a \
+	-DUSE_BUNDLED_ENDIAN_H=ON \
+	-DCMAKE_INSTALL_PREFIX=${DIR_VITA}/usr \
+	-DDEFAULT_JSON="../share/db.json"
+  make
+}
+
+package() {
+  cd "$srcdir/${pkgname}"
+  make DESTDIR="$pkgdir" install
+  install -Dm644 "$srcdir/${pkgname}/COPYING" "$pkgdir/${DIR_VITA}/usr/share/licenses/${pkgname}/LICENSE"
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

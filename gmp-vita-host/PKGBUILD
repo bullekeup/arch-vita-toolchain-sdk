@@ -1,0 +1,44 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=gmp-vita-host
+_pkgname=gmp
+pkgver=6.1.1
+pkgrel=1
+pkgdesc="A free library for arbitrary precision arithmetic - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://gmplib.org/"
+license=('LGPL3' 'GPL')
+source=(https://gmplib.org/download/gmp/gmp-${pkgver}.tar.xz{,.sig})
+md5sums=('e70e183609244a332d80529e7e155a35'
+         'SKIP')
+validpgpkeys=('343C2FF0FBEE5EC2EDBEF399F3599FF828C67298')   # Niels Möller
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+build() {
+  cd "${_pkgname}-${pkgver}"
+
+CPPFLAGS="-fexceptions" ./configure --build=${HOST} \
+    --host=${CHOST} \
+    --prefix=${DIR_NATIVE}/usr \
+    --enable-cxx \
+    --disable-shared \
+    --disable-nls
+  make
+}
+
+check() {
+  cd "${_pkgname}-${pkgver}"
+  make check
+}
+
+package() {
+  cd "${_pkgname}-${pkgver}"
+  make DESTDIR="${pkgdir}" install
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

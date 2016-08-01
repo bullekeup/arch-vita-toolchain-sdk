@@ -1,0 +1,23 @@
+
+post_install() {
+
+cat <<"End-Of-Help"
+
+    ####### PSVita toolchain use #######
+
+    Check you source /etc/profile at 
+    startup to automatically have arm-vita-eabi-gcc 
+    in your PATH.
+
+    Compiler is arm-vita-eabi-gcc, assembler
+    is arm-vita-eabi-as.
+
+    You'll find samples of code and Makefile
+    in the vita-toolchain-samples package.
+
+    ####################################
+
+End-Of-Help
+
+}
+

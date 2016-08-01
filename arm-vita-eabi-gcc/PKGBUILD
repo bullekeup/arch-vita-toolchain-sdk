@@ -1,0 +1,152 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+# 'gcc-fortran' 'gcc-objc' 'gcc-ada' 'gcc-go' 'gcc-libs-vita'
+pkgname=('arm-vita-eabi-gcc')
+_pkgname=gcc
+pkgver=6.1.1
+_pkgver=6
+_islver=0.16.1
+pkgrel=1
+_commit=1bbd3999
+pkgdesc="The GNU Compiler Collection - PSVita toolchain build"
+arch=('i686' 'x86_64')
+license=('GPL' 'LGPL' 'FDL' 'custom')
+url="http://gcc.gnu.org"
+depends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'arm-vita-eabi-tools')
+makedepends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'libmpc-vita-host' 'isl-vita-host' 'cloog-vita-host' 'libelf-vita-host' 'libelf-vita-host' 'mpfr-vita-host' 'gmp-vita-host' 'doxygen' 'git')
+checkdepends=('dejagnu' 'inetutils')
+options=('!emptydirs' '!strip')
+source=(git://gcc.gnu.org/git/gcc.git#commit=${_commit}
+        vita.patch
+        vita-toolchain.sh
+        arm-vita-eabi-gcc.install)
+md5sums=('SKIP'
+         'de69a8ba09cbd239d85dcafde0e1a3bd'
+         '18fa678574f21941c035a9c729a1fde4'
+         'c613628854237110de0accef2306abe6')
+groups=('vita-toolchain')
+conflicts=('arm-vita-eabi-gcc-stage1')
+replace=('arm-vita-eavi-gcc-stage1')
+install='arm-vita-eabi-gcc.install'
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+CFLAGS=" -I${DIR_NATIVE}/usr/include -O2 "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib "
+
+MULTILIB_LIST="--disable-multilib --with-arch=armv7-a --with-tune=cortex-a9 --with-fpu=neon --with-float=hard --with-mode=thumb"
+
+PKGVERSION="GNU Tools for embedded ARM processor - PSVita toolchain build"
+
+# gcc-6.0 forces a changed triplet - need to address in pacman/devtools
+[[ $CARCH == "x86_64" ]] && CHOST=x86_64-pc-linux-gnu
+
+_libdir="usr/lib/gcc/$CHOST/$pkgver"
+
+prepare() {
+  cd ${srcdir}/gcc
+  patch -p1 < ${srcdir}/vita.patch
+  [ -e "${srcdir}/gcc-build" ] && rm -Rf "${srcdir}/gcc-build"
+  mkdir ${srcdir}/gcc-build
+}
+
+build() {
+  cd ${srcdir}/gcc-build
+
+  PATH="${DIR_VITA}/usr/bin:${PATH}"
+  ${srcdir}/gcc/configure --target=${CTARGET} \
+    --prefix=${DIR_VITA}/usr \
+    --libexecdir=${DIR_VITA}/usr/lib \
+    --htmldir=${DIR_VITA}/usr/share/doc/html \
+    --pdfdir=${DIR_VITA}/usr/share/doc/pdf \
+    --enable-languages=c,c++ \
+    --enable-plugins \
+    --disable-decimal-float \
+    --disable-libffi \
+    --disable-libgomp \
+    --disable-libmudflap \
+    --disable-libquadmath \
+    --disable-libssp \
+    --disable-libstdcxx-pch \
+    --disable-nls \
+    --disable-shared \
+    --disable-threads \
+    --disable-tls \
+    --with-gnu-as \
+    --with-gnu-ld \
+    --with-newlib \
+    --with-headers=yes \
+    --with-gnu-as \
+    --with-gnu-ld \
+    --with-as=${DIR_VITA}/usr/bin/${CTARGET}-as \
+    --with-ld=${DIR_VITA}/usr/bin/${CTARGET}-ld \
+    --with-python-dir=share/gcc-${CTARGET} \
+    --with-sysroot=${DIR_VITA} \
+    --build=${CHOST} --host=${CHOST} \
+    --with-gmp=${DIR_NATIVE}/usr \
+    --with-mpfr=${DIR_NATIVE}/usr \
+    --with-mpc=${DIR_NATIVE}/usr \
+    --with-isl=${DIR_NATIVE}/usr \
+    --with-cloog=${DIR_NATIVE}/usr \
+    --with-libelf=${DIR_NATIVE}/usr \
+    --with-host-libstdcxx="-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm" \
+    "--with-pkgversion=$PKGVERSION" \
+    ${MULTILIB_LIST}
+
+  make INHIBIT_LIBC_CFLAGS="-DUSE_TM_CLONE_REGISTRY=0"
+}
+
+package()
+{
+  options=('!emptydirs' '!strip')
+
+  cd ${srcdir}/gcc-build
+  make DESTDIR=${pkgdir} install install-html install-pdf
+
+  rm -rf ${pkgdir}/${DIR_VITA}/usr/bin/$TARGET-gccbug
+  LIBIBERTY_LIBRARIES=`find ${pkgdir}/${DIR_VITA}/usr/lib -name libiberty.a`
+  for libiberty_lib in $LIBIBERTY_LIBRARIES ; do
+    rm -rf $libiberty_lib
+  done
+  rm -rf ${pkgdir}/${DIR_VITA}/usr/lib/libiberty.a
+  rmdir ${pkgdir}/${DIR_VITA}/usr/include
+
+  [ -e ${pkgdir}/etc/profile.d ] || mkdir -p ${pkgdir}/etc/profile.d
+  cp ${srcdir}/vita-toolchain.sh ${pkgdir}/etc/profile.d/
+
+# POSIX conformance launcher scripts for c89 and c99
+cat > $pkgdir/${DIR_VITA}/usr/bin/arm-vita-eabi-c89 <<"EOF"
+#!/bin/sh
+fl="-std=c89"
+for opt; do
+  case "$opt" in
+    -ansi|-std=c89|-std=iso9899:1990) fl="";;
+    -std=*) echo "`basename $0` called with non ANSI/ISO C option $opt" >&2
+	    exit 1;;
+  esac
+done
+exec gcc $fl ${1+"$@"}
+EOF
+
+  cat > $pkgdir/${DIR_VITA}/usr/bin/arm-vita-eabi-c99 <<"EOF"
+#!/bin/sh
+fl="-std=c99"
+for opt; do
+  case "$opt" in
+    -std=c99|-std=iso9899:1999) fl="";;
+    -std=*) echo "`basename $0` called with non ISO C99 option $opt" >&2
+	    exit 1;;
+  esac
+done
+exec gcc $fl ${1+"$@"}
+EOF
+
+  chmod 755 $pkgdir/${DIR_VITA}/usr/bin/arm-vita-eabi-c{8,9}9
+
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

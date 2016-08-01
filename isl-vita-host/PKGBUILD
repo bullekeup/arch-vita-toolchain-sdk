@@ -1,0 +1,50 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=isl-vita-host
+_pkgname=isl
+pkgver=0.16
+pkgrel=1
+pkgdesc="Library for manipulating sets and relations of integer points bounded by linear constraints - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://isl.gforge.inria.fr/"
+makedepends=('gmp-vita-host')
+license=('MIT')
+source=("http://isl.gforge.inria.fr/${_pkgname}-${pkgver}.tar.xz")
+sha256sums=('c72f77019e5d831a9b0b9152428e507fbcbb111aa544baa4e2ba184b5e8caf9c')
+groups=('vita-toolchain-hostlibs')
+
+#unset CFLAGS
+#unset CXXFLAGS
+#CHOST="${arch}-pc-linux-gnu"
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+build() {
+  cd ${_pkgname}-${pkgver}
+
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_NATIVE}/usr \
+    --disable-shared \
+    --disable-nls \
+    --with-gmp-prefix=${DIR_NATIVE}/usr
+  make
+}
+
+check() {
+  cd ${_pkgname}-${pkgver}
+  make check
+}
+
+package() {
+  cd ${_pkgname}-${pkgver}
+  make DESTDIR="$pkgdir" install
+
+  ( [ -e "$pkgdir"/${DIR_NATIVE}/usr/lib/libisl.so.*-gdb.py ] && install -dm755 "$pkgdir"/${DIR_NATIVE}/usr/share/gdb/auto-load/usr/lib/ && mv "$pkgdir"/${DIR_NATIVE}/usr/lib/libisl.so.*-gdb.py "$pkgdir"/${DIR_NATIVE}/usr/share/gdb/auto-load/usr/lib/ ) || echo "No gdb script to copy"
+  
+  install -Dm644 LICENSE "$pkgdir"/${DIR_NATIVE}/usr/share/licenses/isl/LICENSE
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}

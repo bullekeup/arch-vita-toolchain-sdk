@@ -1,0 +1,84 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=arm-vita-eabi-newlib
+pkgver=2.4.0
+pkgrel=1
+_upstream_ver=2.4.0.20160527
+pkgdesc='A C standard library implementation intended for use on embedded systems (ARM bare metal) - PSVita toolchain build'
+arch=('i686' 'x86_64')
+url='http://www.sourceware.org/newlib/'
+license=(BSD)
+makedepends=(arm-vita-eabi-gcc-stage1)
+options=('!emptydirs' '!strip')
+source=(git+https://github.com/vitasdk/newlib.git#branch=vita)
+sha1sums=('SKIP')
+groups=('vita-toolchain')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+CFLAGS=" -I${DIR_NATIVE}/usr/include -O2 "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib "
+CFLAGS_FOR_TARGET=' -g -O2 -ffunction-sections -fdata-sections '
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+build() {
+  rm -rf build-{newlib,nano}
+  mkdir build-{newlib,nano}
+
+  cd "${srcdir}"/build-newlib
+  ../newlib/configure \
+    --build=${CHOST} --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_VITA}/usr \
+    --enable-newlib-io-long-long \
+    --enable-newlib-register-fini \
+    --disable-newlib-supplied-syscalls \
+    --disable-nls
+  make
+
+  cd "${srcdir}"/build-nano
+  ../newlib/configure \
+    --build=${CHOST} --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_VITA}/usr \
+    --disable-newlib-supplied-syscalls \
+    --disable-nls \
+    --enable-newlib-reent-small           \
+    --disable-newlib-fvwrite-in-streamio  \
+    --disable-newlib-fseek-optimization   \
+    --disable-newlib-wide-orient          \
+    --enable-newlib-nano-malloc           \
+    --disable-newlib-unbuf-stream-opt     \
+    --enable-lite-exit                    \
+    --enable-newlib-global-atexit         \
+    --enable-newlib-nano-formatted-io
+  make
+  #make pdf
+  #make html
+}
+
+package() {
+  cd "$srcdir"/build-nano
+  make DESTDIR="$pkgdir" install -j1
+
+  cd "$srcdir"/build-newlib
+  make DESTDIR="$pkgdir" install -j1
+
+  #mkdir -p ${pkgdir}/${DIR_VITA}/usr/share/doc/pdf
+  #cp ${srcdir}/newlib/${CTARGET}/newlib/libc/libc.pdf ${pkgdir}/${DIR_VITA}/usr/share/doc/pdf/libc.pdf
+  #cp ${srcdir}/newlib/${CTARGET}/newlib/libm/libm.pdf ${pkgdir}/${DIR_VITA}/usr/share/doc/pdf/libm.pdf
+
+  #mkdir -p ${pkgdir}/${DIR_VITA}/usr/share/doc/html
+  #copy_dir ${srcdir}/newlib/${CTARGET}/newlib/libc/libc.html ${pkgdir}/${DIR_VITA}/usr/share/doc/html/libc
+  #copy_dir ${srcdir}/newlib/${CTARGET}/newlib/libm/libm.html ${pkgdir}/${DIR_VITA}/usr/share/doc/html/libm
+
+  install -d "$pkgdir"/${DIR_VITA}/usr/share/licenses/$pkgname/
+  install -m644 -t "$pkgdir"/${DIR_VITA}/usr/share/licenses/$pkgname/ "$srcdir"/newlib/COPYING*
+
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

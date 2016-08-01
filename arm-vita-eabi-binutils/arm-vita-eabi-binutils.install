@@ -1,0 +1,6 @@
+
+post_install() {
+	ln -s /opt/vita-toolchain/arm-vita-eabi/usr/bin /opt/vita-toolchain/arm-vita-eabi/bin
+    ln -s /opt/vita-toolchain/arm-vita-eabi/usr/lib /opt/vita-toolchain/arm-vita-eabi/lib
+}
+

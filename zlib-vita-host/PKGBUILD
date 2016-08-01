@@ -1,0 +1,42 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=zlib-vita-host
+pkgver=1.2.8
+pkgrel=1
+pkgdesc='Compression library implementing the deflate compression method found in gzip and PKZIP - PSVita toolchain build'
+arch=('i686' 'x86_64')
+license=('custom')
+url="http://www.zlib.net/"
+depends=('glibc')
+options=('staticlibs')  # needed by binutils testsuite
+source=("http://zlib.net/current/zlib-${pkgver}.tar.gz")
+md5sums=('44d667c142d7cda120332623eab69f40')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+prepare() {
+	cd ${srcdir}/zlib-$pkgver
+	grep -A 24 '^  Copyright' zlib.h > LICENSE
+}
+
+build() {
+	cd ${srcdir}/zlib-$pkgver
+	./configure --static --prefix=${DIR_NATIVE}/usr
+	make
+}
+
+check() {
+	cd ${srcdir}/zlib-$pkgver
+	make test
+}
+
+package() {
+	cd ${srcdir}/zlib-$pkgver
+	make install DESTDIR=${pkgdir}
+	install -D -m644 LICENSE ${pkgdir}/${DIR_NATIVE}/usr/share/licenses/zlib/LICENSE
+	( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}

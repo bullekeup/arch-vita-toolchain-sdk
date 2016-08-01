@@ -1,0 +1,47 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+pkgname=arm-vita-eabi-libs
+pkgver=git
+pkgrel=1
+pkgdesc="PSVita toolchain dev libs"
+arch=('i686' 'x86_64')
+url="https://github.com/vitasdk/vita-headers"
+license=('custom')
+groups=('vita-toolchain')
+depends=('arm-vita-eabi-binutils' 'arm-vita-eabi-newlib')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc')
+source=(git+https://github.com/vitasdk/vita-headers)
+md5sums=('SKIP')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+build() {
+
+  [ -e ${srcdir}/build-libs ] && rm -Rf ${srcdir}/build-libs
+  mkdir ${srcdir}/build-libs
+  cd ${srcdir}/build-libs
+
+  vita-libs-gen ${srcdir}/vita-headers/db.json .
+  make ARCH=arm-vita-eabi
+
+}
+
+package() {
+
+  cd ${srcdir}/build-libs
+
+  [ -e ${pkgdir}/${DIR_VITA}/usr/lib ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/lib
+  [ -e ${pkgdir}/${DIR_VITA}/usr/include ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/include
+  [ -e ${pkgdir}/${DIR_VITA}/usr/share ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/share
+
+  cp *.a ${pkgdir}/${DIR_VITA}/usr/lib/
+  cp -r ${srcdir}/vita-headers/include/* ${pkgdir}/${DIR_VITA}/usr/include/
+  cp ${srcdir}/vita-headers/db.json ${pkgdir}/${DIR_VITA}/usr/share/
+
+}
+
+# vim:set ts=2 sw=2 et:

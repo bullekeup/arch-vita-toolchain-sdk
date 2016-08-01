@@ -1,0 +1,65 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=vita-toolchain-samples
+_sample=vitahelloworld
+pkgver=git
+pkgrel=1
+pkgdesc="PSVita toolchain code sample : xerpi's vitahelloworld"
+arch=(any)
+url="https://github.com/xerpi/vitahelloworld"
+license=('custom')
+groups=('vita-toolchain')
+depends=('arm-vita-eabi-binutils' 'arm-vita-eabi-newlib' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs')
+makedepends=('git')
+source=(git+https://github.com/xerpi/vitahelloworld)
+md5sums=('SKIP')
+install=${pkgname}.install
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+build() {
+
+  cd ${srcdir}/${_sample}
+  make clean
+  make
+
+}
+
+package() {
+
+  cd ${srcdir}/${_sample}
+
+  [ -e ${pkgdir}/${DIR_VITA}/usr/share/samples/vpk ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/share/samples/vpk
+  [ -e ${pkgdir}/${DIR_VITA}/usr/share/samples/src ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/share/samples/src
+  [ -e ${pkgdir}/${DIR_VITA}/usr/bin ] || mkdir -p ${pkgdir}/${DIR_VITA}/usr/bin
+
+  cp *.vpk ${pkgdir}/${DIR_VITA}/usr/share/samples/vpk
+  cd ${pkgdir}/${DIR_VITA}/usr/share/samples/src/
+  git clone https://github.com/xerpi/vitahelloworld
+  rm -Rf vitahelloworld/.git*
+
+cat >${pkgdir}/${DIR_VITA}/usr/bin/vita-testsuite <<EOF
+#!/bin/bash
+
+echo "Turn on your vita and launch HENkaku's FTP server then press enter..."
+read 
+cp -R ${DIR_VITA}/usr/share/samples/src/vitahelloworld ./
+cd vitahelloworld
+make clean
+make
+echo "Enter Vita's IP address: "
+read VITA_IP
+curl -T vitahelloworld.vpk ftp://"\${VITA_IP}":1337/ux0:/
+echo "vitahelloworld.vpk transfered on vita's memory card in ux0:/, select and press X two times to install."
+
+EOF
+
+ chmod +x ${pkgdir}/${DIR_VITA}/usr/bin/vita-testsuite
+
+}
+
+# vim:set ts=2 sw=2 et:

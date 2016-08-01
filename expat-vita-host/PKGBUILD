@@ -1,0 +1,44 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=expat-vita-host
+_pkgname=expat
+pkgver=2.2.0
+pkgrel=1
+pkgdesc='An XML parser library - PSVita toolchain build'
+arch=('i686' 'x86_64')
+url='http://expat.sourceforge.net/'
+license=('custom')
+depends=('glibc')
+makedepends=('zlib-vita-host' 'libzip-vita-host' 'libelf-vita-host')
+source=(http://downloads.sourceforge.net/sourceforge/expat/${_pkgname}-${pkgver}.tar.bz2)
+md5sums=('2f47841c829facb346eb6e3fab5212e2')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+# -fPIC needed ?
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
+
+build() {
+  cd ${_pkgname}-${pkgver}
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_NATIVE}/usr \
+    --disable-shared \
+    --disable-nls
+  make
+}
+
+package() {
+  cd ${_pkgname}-${pkgver}
+  make DESTDIR="$pkgdir" install
+  install -Dm644 COPYING "$pkgdir"/${DIR_NATIVE}/usr/share/licenses/${_pkgname}/COPYING
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

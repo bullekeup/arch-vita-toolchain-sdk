@@ -1,0 +1,42 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname=cloog-vita-host
+_pkgname=cloog
+pkgver=0.18.4
+pkgrel=1
+pkgdesc="Library that generates loops for scanning polyhedra - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://www.bastoul.net/cloog/"
+license=('GPL')
+makedepends=('gmp-vita-host' 'isl-vita-host')
+source=(http://www.bastoul.net/cloog/pages/download/${_pkgname}-$pkgver.tar.gz)
+md5sums=('e531f725244856c92c9bba009ff44faf')
+groups=('vita-toolchain-hostlibs')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+build() {
+  cd "${srcdir}/${_pkgname}-${pkgver}"
+  ./configure --build=${CHOST} \
+    --host=${CHOST} \
+    --target=${CTARGET} \
+    --prefix=${DIR_NATIVE}/usr \
+    --disable-shared \
+    --disable-nls \
+    --with-bits=gmp \
+    --with-host-libstdcxx='-lstdc++'    \
+    --with-gmp-prefix=${DIR_NATIVE}/usr \
+    --with-isl-prefix=${DIR_NATIVE}/usr \
+    --with-osl=no
+  make
+}
+
+package() {
+  cd "${srcdir}/${_pkgname}-${pkgver}"
+  make DESTDIR=$pkgdir/ install
+  ( [ -e ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_NATIVE}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

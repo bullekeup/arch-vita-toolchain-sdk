@@ -1,0 +1,75 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+pkgname='arm-vita-eabi-binutils'
+_pkgname=binutils
+pkgver=2.26.1
+pkgrel=1
+_commit=c29838e7
+pkgdesc="A set of programs to assemble and manipulate binary and object files - PSVita toolchain build"
+arch=('i686' 'x86_64')
+url="http://www.gnu.org/software/binutils/"
+license=('GPL')
+depends=()
+makedepends=('git' 'zlib-vita-host' 'libelf-vita-host' 'cloog-vita-host' 'jansson-vita-host')
+checkdepends=('dejagnu' 'bc')
+options=('staticlibs' '!distcc' '!ccache' '!strip')
+source=(git://sourceware.org/git/binutils-gdb.git#commit=${_commit}
+        vita.patch)
+md5sums=('SKIP'
+         'SKIP')
+groups=('vita-toolchain')
+install='arm-vita-eabi-binutils.install'
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+CFLAGS=" -I${DIR_NATIVE}/usr/include -O2 "
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib "
+
+PKGVERSION="GNU Tools for embedded ARM processor - PSVita toolchain build"
+
+prepare() {
+  cd binutils-gdb
+
+  patch -p1 < ${srcdir}/vita.patch
+
+  # hack! - libiberty configure tests for header files using "$CPP $CPPFLAGS"
+  #sed -i "/ac_cpp=/s/\$CPPFLAGS/\$CPPFLAGS -O2/" libiberty/configure
+
+  [ -e ${srcdir}/binutils-build ] && rm -Rf ${srcdir}/binutils-build
+  mkdir ${srcdir}/binutils-build
+}
+
+build() {
+  cd binutils-build
+
+  ../binutils-gdb/configure \
+    --build=${CHOST} --host=${CHOST} \
+    --prefix=${DIR_VITA} \
+    --target=${CTARGET} \
+    --disable-nls \
+    --disable-werror \
+    --enable-interwork \
+    --enable-plugins \
+    --with-sysroot=${DIR_VITA} \
+    "--with-pkgversion=${PKGVERSION}"
+    #--with-bugurl=https://bugs.archlinux.org/ \
+
+  # check the host environment and makes sure all the necessary tools are available
+  make configure-host
+  make tooldir=${DIR_NATIVE}/usr
+}
+
+package() {
+  cd binutils-build
+  make prefix=${pkgdir}/${DIR_VITA}/usr tooldir=${pkgdir}/${DIR_NATIVE}/usr install
+
+  echo "INPUT ( ${DIR_VITA}/usr/lib/libbfd.a -liberty -lz -ldl )" > "$pkgdir"/${DIR_VITA}/usr/lib/libbfd.so
+  echo "INPUT ( ${DIR_VITA}/usr/lib/libopcodes.a -lbfd )" > "$pkgdir"/${DIR_VITA}/usr/lib/libopcodes.so
+
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+
