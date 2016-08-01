@@ -24,7 +24,6 @@ source=(git://gcc.gnu.org/git/gcc.git#commit=${_commit}
 md5sums=('SKIP'
          'SKIP')
 #         'ac1f25a0677912952718a51f5bc20f32')
-groups=('vita-toolchain')
 conflicts=('arm-vita-eabi-gcc')
 
 CTARGET="arm-vita-eabi"
