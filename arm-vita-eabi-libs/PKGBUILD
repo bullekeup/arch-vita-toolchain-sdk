@@ -1,7 +1,6 @@
 # $Id$
 # Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
 pkgname=arm-vita-eabi-libs
-_commit=1f5dafc2f32e81c40131be5e1de37cac915fbbe8
 pkgver=git
 pkgrel=2
 pkgdesc="PSVita toolchain dev libs"
@@ -11,7 +10,7 @@ license=('custom')
 groups=('vita-toolchain')
 depends=('arm-vita-eabi-binutils' 'arm-vita-eabi-newlib')
 makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc')
-source=("${pkgname}::git+https://github.com/vitasdk/vita-headers#commit=${_commit}")
+source=("${pkgname}::git+https://github.com/vitasdk/vita-headers")
 md5sums=('SKIP')
 options=(!strip)
 

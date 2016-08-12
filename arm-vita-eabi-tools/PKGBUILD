@@ -3,16 +3,14 @@
 
 pkgname=arm-vita-eabi-tools
 _pkgname=vita-toolchain
-#_commit=f8fbf1425c0358130674ff1a23618de89e74d5b1
-_commit=31b666b873c9bb33b832e96808daa65dc631ebea
 pkgver=git
-pkgrel=2
+pkgrel=3
 pkgdesc='PSVita toolchain tools'
 arch=('i686' 'x86_64')
 url='https://github.com/vitasdk/vita-toolchain'
 license=('custom')
 makedepends=('git' 'cmake' 'extra-cmake-modules' 'libelf-vita-host' 'zlib-vita-host' 'libzip-vita-host' 'jansson-vita-host')
-source=("${pkgname}::git+http://github.com/vitasdk/vita-toolchain#commit=${_commit}"
+source=("${pkgname}::git+http://github.com/vitasdk/vita-toolchain"
         "https://github.com/vitasdk/vita-headers/raw/master/db.json")
 md5sums=('SKIP'
          'SKIP')

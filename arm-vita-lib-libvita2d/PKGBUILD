@@ -2,7 +2,7 @@
 # Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
 #
 # Xerpi's libvita2d
-# See https://github.com/xerpi/vita_portlibs
+# See https://github.com/xerpi/libvita2d
 
 pkgname=arm-vita-lib-libvita2d
 pkgver=git
