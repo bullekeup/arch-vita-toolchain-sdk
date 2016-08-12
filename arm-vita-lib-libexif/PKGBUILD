@@ -1,0 +1,48 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Based on Xerpi's vita-portlibs
+# See https://github.com/xerpi/vita_portlibs
+
+pkgname=arm-vita-lib-libexif
+_pkgname=libexif
+pkgver=0.6.21
+pkgrel=1
+pkgdesc="PSVita libexif build"
+arch=('i686' 'x86_64')
+url="http://sourceforge.net/projects/libexif"
+license=('custom')
+groups=('vita-toolchain-portlibs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs')
+source=("http://sourceforge.net/projects/libexif/files/libexif/0.6.21/${_pkgname}-${pkgver}.tar.bz2")
+md5sums=('27339b89850f28c8f1c237f233e05b27')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export PKG_CONFIG_PATH=${DIR_VITA}/usr/lib/pkgconfig
+export CFLAGS="-std=c99 -ftree-vectorize -O3 -ffat-lto-objects -flto -mword-relocations -fomit-frame-pointer -ffast-math"
+export CPPFLAGS=-I${DIR_VITA}/usr/include
+export LDFLAGS=-L${DIR_VITA}/usr/lib
+
+build() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  ./configure --prefix=${DIR_VITA}/usr --host=${CTARGET} --disable-shared --enable-static
+  make 
+
+}
+
+package() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  make DESTDIR=${pkgdir} install
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:

@@ -1,0 +1,44 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Xerpi's libftpvita
+# See https://github.com/xerpi/libftpvita
+
+pkgname=arm-vita-lib-libftpvita
+pkgver=git
+pkgrel=1
+pkgdesc="Xerpi's PSVita libftp"
+arch=('i686' 'x86_64')
+url="https://github.com/xerpi/libftpvita"
+license=('custom')
+groups=('vita-toolchain-libs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs')
+source=("${pkgname}::git+https://github.com/xerpi/libftpvita")
+md5sums=('SKIP')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export VITASDK=/opt/vita-toolchain
+export PREFIX=${DIR_VITA}/usr
+
+build() {
+
+  cd ${srcdir}/${pkgname}/libftpvita
+  make 
+
+}
+
+package() {
+
+  cd ${srcdir}/${pkgname}/libftpvita
+  make DESTDIR=${pkgdir} install
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:

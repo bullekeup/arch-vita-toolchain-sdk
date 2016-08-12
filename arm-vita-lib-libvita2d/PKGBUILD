@@ -1,0 +1,50 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Xerpi's libvita2d
+# See https://github.com/xerpi/vita_portlibs
+
+pkgname=arm-vita-lib-libvita2d
+pkgver=git
+pkgrel=1
+pkgdesc="Xerpi's PSVita libvita2d"
+arch=('i686' 'x86_64')
+url="https://github.com/xerpi/libvita2d"
+license=('MIT')
+groups=('vita-toolchain-libs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools' 'arm-vita-lib-zlib' 'arm-vita-lib-freetype' 'arm-vita-lib-libexif' 'arm-vita-lib-sqlite' 'arm-vita-lib-libpng' 'arm-vita-lib-libjpeg-turbo')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-lib-zlib' 'arm-vita-lib-freetype' 'arm-vita-lib-libexif' 'arm-vita-lib-sqlite' 'arm-vita-lib-libpng' 'arm-vita-lib-libjpeg-turbo')
+source=("${pkgname}::git+https://github.com/xerpi/libvita2d"
+        "0001-Makefile-adapted-for-Arch-packaging-compilation.patch")
+md5sums=('SKIP'
+         'ea547f2c116f0edfed1d7e20fa497d01')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export VITASDK=/opt/vita-toolchain
+export PREFIX=${DIR_VITA}/usr
+
+build() {
+
+  export CFLAGS="-Wl,-q -Wall -O3 -I${srcdir}/${pkgname}/libvita2d/include -I${DIR_VITA}/usr/include/freetype2 -ffat-lto-objects -flto"
+  export ASFLAGS="${CFLAGS}"
+  cd ${srcdir}/${pkgname}
+  patch -p1 < "${srcdir}/0001-Makefile-adapted-for-Arch-packaging-compilation.patch"
+  cd libvita2d
+  make
+
+}
+
+package() {
+
+  cd ${srcdir}/${pkgname}/libvita2d
+  make DESTDIR=${pkgdir} install
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:

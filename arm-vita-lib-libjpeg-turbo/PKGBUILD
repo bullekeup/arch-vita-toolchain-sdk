@@ -1,0 +1,48 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Based on Xerpi's vita-portlibs
+# See https://github.com/xerpi/vita_portlibs
+
+pkgname=arm-vita-lib-libjpeg-turbo
+_pkgname=libjpeg-turbo
+pkgver=1.5.0
+pkgrel=1
+pkgdesc="PSVita libjpeg-turbo build"
+arch=('i686' 'x86_64')
+url="http://sourceforge.net/projects/libjpeg-turbo"
+license=('custom')
+groups=('vita-toolchain-portlibs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs')
+source=("http://sourceforge.net/projects/libjpeg-turbo/files/1.5.0/${_pkgname}-${pkgver}.tar.gz")
+md5sums=('3fc5d9b6a8bce96161659ae7a9939257')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export PKG_CONFIG_PATH=${DIR_VITA}/usr/lib/pkgconfig
+export CFLAGS="-std=c99 -ftree-vectorize -O3 -ffat-lto-objects -flto -mword-relocations -fomit-frame-pointer -ffast-math -DNO_GETENV"
+export CPPFLAGS=-I${DIR_VITA}/usr/include
+export LDFLAGS=-L${DIR_VITA}/usr/lib
+
+build() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  ./configure --prefix=${DIR_VITA}/usr --host=${CTARGET} --disable-shared --enable-static --without-simd
+  make PROGRAMS=
+  
+}
+
+package() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  make DESTDIR=${pkgdir} install-libLTLIBRARIES install-data-am
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:

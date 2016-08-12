@@ -1,0 +1,48 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Based on Xerpi's vita-portlibs
+# See https://github.com/xerpi/vita_portlibs
+
+pkgname=arm-vita-lib-libpng
+_pkgname=libpng
+pkgver=1.6.23
+pkgrel=1
+pkgdesc="PSVita libpng build"
+arch=('i686' 'x86_64')
+url="http://sourceforge.net/projects/libpng"
+license=('custom')
+groups=('vita-toolchain-portlibs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools' 'arm-vita-lib-zlib')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-lib-zlib')
+source=("http://sourceforge.net/projects/libpng/files/libpng16/1.6.23/${_pkgname}-${pkgver}.tar.gz")
+md5sums=('a49e4cc48d968c79def53d082809c9f2')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export PKG_CONFIG_PATH=${DIR_VITA}/usr/lib/pkgconfig
+export CFLAGS="-std=c99 -ftree-vectorize -O3 -ffat-lto-objects -flto -mword-relocations -fomit-frame-pointer -ffast-math -DPNG_NO_CONSOLE_IO"
+export CPPFLAGS=-I${DIR_VITA}/usr/include
+export LDFLAGS=-L${DIR_VITA}/usr/lib
+
+build() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  ./configure --prefix=${DIR_VITA}/usr --host=${CTARGET} --enable-arm-neon --disable-shared --enable-static
+  make PROGRAMS= check_PROGRAMS=
+  
+}
+
+package() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  make DESTDIR=${pkgdir} install-libLTLIBRARIES install-data-am
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:

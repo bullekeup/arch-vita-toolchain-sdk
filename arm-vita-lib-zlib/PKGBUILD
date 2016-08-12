@@ -1,0 +1,48 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+#
+# Based on Xerpi's vita-portlibs
+# See https://github.com/xerpi/vita_portlibs
+
+pkgname=arm-vita-lib-zlib
+_pkgname=zlib
+pkgver=1.2.8
+pkgrel=1
+pkgdesc="PSVita zlib build"
+arch=('i686' 'x86_64')
+url="http://sourceforge.net/projects/libpng/files/zlib/1.2.8/"
+license=('custom')
+groups=('vita-toolchain-portlibs')
+depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools')
+makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs')
+source=("http://sourceforge.net/projects/libpng/files/zlib/1.2.8/${_pkgname}-${pkgver}.tar.xz")
+md5sums=('28f1205d8dd2001f26fec1e8c2cebe37')
+options=(!strip)
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+PATH="${DIR_VITA}/usr/bin:${PATH}"
+
+export PKG_CONFIG_PATH=${DIR_VITA}/usr/lib/pkgconfig
+export CFLAGS="-std=c99 -ftree-vectorize -O3 -ffat-lto-objects -flto -mword-relocations -fomit-frame-pointer -ffast-math"
+export CPPFLAGS=-I${DIR_VITA}/usr/include
+export LDFLAGS=-L${DIR_VITA}/usr/lib
+
+build() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  CHOST=${CTARGET} ./configure --static --prefix=${DIR_VITA}/usr
+  make 
+
+}
+
+package() {
+
+  cd ${srcdir}/${_pkgname}-${pkgver}
+  make DESTDIR=${pkgdir} install
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+
+}
+
+# vim:set ts=2 sw=2 et:
