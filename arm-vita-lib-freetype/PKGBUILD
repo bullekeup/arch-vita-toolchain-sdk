@@ -15,7 +15,7 @@ license=('custom')
 groups=('vita-toolchain-portlibs')
 depends=('arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-eabi-tools' 'arm-vita-lib-zlib')
 makedepends=('git' 'arm-vita-eabi-tools' 'arm-vita-eabi-gcc' 'arm-vita-eabi-libs' 'arm-vita-lib-zlib')
-source=("http://sourceforge.net/projects/freetype/files/freetype2/2.6.5/${_pkgname}-${pkgver}.tar.bz2")
+source=("https://sourceforge.net/projects/freetype/files/freetype2/2.6.2/${_pkgname}-${pkgver}.tar.bz2/download")
 md5sums=('86109d0c998787d81ac582bad9adf82e')
 options=(!strip)
 
