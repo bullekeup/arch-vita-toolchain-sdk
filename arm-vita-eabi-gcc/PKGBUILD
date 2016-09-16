@@ -7,14 +7,14 @@ _pkgname=gcc
 pkgver=6.1.1
 _pkgver=6
 _islver=0.16.1
-pkgrel=1
+pkgrel=2
 _commit=1bbd3999
 pkgdesc="The GNU Compiler Collection - PSVita toolchain build"
 arch=('i686' 'x86_64')
 license=('GPL' 'LGPL' 'FDL' 'custom')
 url="http://gcc.gnu.org"
-depends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'arm-vita-eabi-tools')
-makedepends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'libmpc-vita-host' 'isl-vita-host' 'cloog-vita-host' 'libelf-vita-host' 'libelf-vita-host' 'mpfr-vita-host' 'gmp-vita-host' 'doxygen' 'git')
+depends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'arm-vita-eabi-tools' 'arm-vita-eabi-pthread-embedded')
+makedepends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'libmpc-vita-host' 'isl-vita-host' 'cloog-vita-host' 'libelf-vita-host' 'libelf-vita-host' 'mpfr-vita-host' 'gmp-vita-host' 'doxygen' 'git' 'arm-vita-eabi-pthread-embedded')
 checkdepends=('dejagnu' 'inetutils')
 options=('!emptydirs' '!strip')
 source=(git://gcc.gnu.org/git/gcc.git#commit=${_commit}
@@ -22,7 +22,7 @@ source=(git://gcc.gnu.org/git/gcc.git#commit=${_commit}
         vita-toolchain.sh
         arm-vita-eabi-gcc.install)
 md5sums=('SKIP'
-         'de69a8ba09cbd239d85dcafde0e1a3bd'
+         'eb5e836c42bcc4f35f838cf3b73131a3'
          '18fa678574f21941c035a9c729a1fde4'
          'c613628854237110de0accef2306abe6')
 groups=('vita-toolchain')
@@ -74,18 +74,16 @@ build() {
     --disable-libstdcxx-pch \
     --disable-nls \
     --disable-shared \
-    --disable-threads \
+    --enable-threads=posix \
     --disable-tls \
     --with-gnu-as \
     --with-gnu-ld \
     --with-newlib \
     --with-headers=yes \
-    --with-gnu-as \
-    --with-gnu-ld \
     --with-as=${DIR_VITA}/usr/bin/${CTARGET}-as \
     --with-ld=${DIR_VITA}/usr/bin/${CTARGET}-ld \
     --with-python-dir=share/gcc-${CTARGET} \
-    --with-sysroot=${DIR_VITA} \
+    --with-sysroot="${DIR_VITA}" \
     --build=${CHOST} --host=${CHOST} \
     --with-gmp=${DIR_NATIVE}/usr \
     --with-mpfr=${DIR_NATIVE}/usr \
@@ -94,7 +92,7 @@ build() {
     --with-cloog=${DIR_NATIVE}/usr \
     --with-libelf=${DIR_NATIVE}/usr \
     --with-host-libstdcxx="-static-libgcc -Wl,-Bstatic,-lstdc++,-Bdynamic -lm" \
-    "--with-pkgversion=$PKGVERSION" \
+    --with-pkgversion="$PKGVERSION" \
     ${MULTILIB_LIST}
 
   make INHIBIT_LIBC_CFLAGS="-DUSE_TM_CLONE_REGISTRY=0"
