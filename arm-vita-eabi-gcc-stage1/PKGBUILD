@@ -57,7 +57,7 @@ build() {
   ${srcdir}/gcc/configure --target=${CTARGET} \
     --prefix=${DIR_VITA}/usr \
     --libexecdir=${DIR_VITA}/usr/lib \
-    --enable-languages=c \
+    --enable-languages=c,c++ \
     --disable-decimal-float \
     --disable-libffi \
     --disable-libgomp \

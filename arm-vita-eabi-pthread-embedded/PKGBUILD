@@ -1,0 +1,46 @@
+# $Id$
+# Maintainer: Axel Moinet (BuLLeKeUp) <bullekeup@gmail.com>
+
+# 'gcc-fortran' 'gcc-objc' 'gcc-ada' 'gcc-go' 'gcc-libs-vita'
+pkgname=('arm-vita-eabi-pthread-embedded')
+_pkgname=pthread-embedded
+pkgver=git
+pkgrel=1
+pkgdesc="pthread-embedded - PSVita toolchain build"
+arch=('i686' 'x86_64')
+license=('GPL' 'LGPL' 'FDL' 'custom')
+url="https://github.com/vitasdk/pthread-embedded"
+depends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'arm-vita-eabi-tools')
+makedepends=('arm-vita-eabi-binutils>=2.26' 'arm-vita-eabi-newlib' 'libmpc-vita-host' 'isl-vita-host' 'cloog-vita-host' 'libelf-vita-host' 'libelf-vita-host' 'mpfr-vita-host' 'gmp-vita-host' 'doxygen' 'git')
+checkdepends=('dejagnu' 'inetutils')
+options=('!emptydirs' '!strip')
+source=(git://github.com/vitasdk/pthread-embedded)
+md5sums=('SKIP')
+groups=('vita-toolchain')
+
+CTARGET="arm-vita-eabi"
+DIR_NATIVE=/opt/vita-toolchain/${CHOST}
+DIR_VITA=/opt/vita-toolchain/${CTARGET}
+
+CC=${CTARGET}-gcc
+CFLAGS=" -I${DIR_NATIVE}/usr/include -O2 -g -O2 -ffunction-sections -fdata-sections"
+CPPFLAGS=" -I${DIR_NATIVE}/usr/include "
+LDFLAGS=" -L${DIR_NATIVE}/usr/lib "
+
+PKGVERSION="pthread embedded - PSVita toolchain build"
+
+build() {
+  cd ${srcdir}/${_pkgname}/platform/vita
+  CC=${CC} make
+}
+
+package()
+{
+  cd ${srcdir}/${_pkgname}/platform/vita
+  export PREFIX=${pkgdir}/${DIR_VITA}/usr
+  make install
+  #mkdir -p cp ${pkgdir}/${DIR_NATIVE}/usr/include
+  #cp ${pkgdir}/${DIR_VITA}/usr/include/* ${pkgdir}/${DIR_NATIVE}/usr/include/
+  ( [ -e ${pkgdir}/${DIR_VITA}/usr/share/info/dir ] && rm ${pkgdir}/${DIR_VITA}/usr/share/info/dir ) || echo "No info dir to delete"
+}
+

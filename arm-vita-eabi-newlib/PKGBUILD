@@ -3,13 +3,14 @@
 
 pkgname=arm-vita-eabi-newlib
 pkgver=2.4.0
-pkgrel=1
+pkgrel=2
 _upstream_ver=2.4.0.20160527
 pkgdesc='A C standard library implementation intended for use on embedded systems (ARM bare metal) - PSVita toolchain build'
 arch=('i686' 'x86_64')
 url='http://www.sourceware.org/newlib/'
 license=(BSD)
-makedepends=(arm-vita-eabi-gcc-stage1)
+depends=('arm-vita-eabi-libs')
+makedepends=('arm-vita-eabi-gcc-stage1' 'arm-vita-eabi-tools' 'arm-vita-eabi-libs')
 options=('!emptydirs' '!strip')
 source=(git+https://github.com/vitasdk/newlib.git#branch=vita)
 sha1sums=('SKIP')

@@ -4,7 +4,7 @@
 pkgname=libzip-vita-host
 _pkgname=libzip
 pkgver=1.1.2
-pkgrel=1
+pkgrel=2
 pkgdesc="A C library for reading, creating, and modifying zip archives - PSVita toolchain build"
 url="http://www.nih.at/libzip/index.html"
 license=('BSD')
@@ -19,7 +19,7 @@ DIR_NATIVE=/opt/vita-toolchain/${CHOST}
 DIR_VITA=/opt/vita-toolchain/${CTARGET}
 
 # -fPIC needed ?
-CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS} "
+CFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CFLAGS}"
 CPPFLAGS=" -I${DIR_NATIVE}/usr/include -L${DIR_NATIVE}/usr/lib ${CPPFLAGS} "
 LDFLAGS=" -L${DIR_NATIVE}/usr/lib ${LDFLAGS} "
 
@@ -28,7 +28,7 @@ build() {
 
   ./configure --prefix=${DIR_NATIVE}/usr \
     --with-zlib=${DIR_NATIVE}/usr/lib \
-    --disable-nls \
+    --enable-static \
     --disable-shared
   make
 }

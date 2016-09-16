@@ -4,7 +4,7 @@
 pkgname=arm-vita-eabi-tools
 _pkgname=vita-toolchain
 pkgver=git
-pkgrel=3
+pkgrel=4
 pkgdesc='PSVita toolchain tools'
 arch=('i686' 'x86_64')
 url='https://github.com/vitasdk/vita-toolchain'
@@ -33,8 +33,10 @@ build() {
 	-DJansson_LIBRARY=${DIR_NATIVE}/usr/lib/libjansson.a \
 	-Dlibelf_INCLUDE_DIR=${DIR_NATIVE}/usr/include/libelf \
 	-Dlibelf_LIBRARY=${DIR_NATIVE}/usr/lib/libelf.a \
-    -Dzlib_INCLUDE_DIR=${DIR_NATIVE}/usr/include/ \
-    -Dzlib_LIBRARY=${DIR_NATIVE}/usr/lib/libz.a \
+        -Dzlib_INCLUDE_DIR=${DIR_NATIVE}/usr/include/ \
+        -Dzlib_LIBRARY=${DIR_NATIVE}/usr/lib/libz.a \
+        -Dlibzip_CONFIG_INCLUDE_DIR=${DIR_NATIVE}/usr/include/ \
+        -Dlibzip_LIBRARY=${DIR_NATIVE}/usr/lib/libzip.a \
 	-DUSE_BUNDLED_ENDIAN_H=ON \
 	-DCMAKE_INSTALL_PREFIX=${DIR_VITA}/usr \
 	-DDEFAULT_JSON="../share/db.json"
